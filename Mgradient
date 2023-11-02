@@ -1,0 +1,48 @@
+import matplotlib.pyplot as plt
+import numpy as np
+from numpy import linalg as la
+
+def funcao(x, y):
+    return (x - 1)**2 + (y - 3)**2 + 4
+
+x = np.linspace(-2, 4, 400)
+y = np.linspace(-2, 6, 400)
+X, Y = np.meshgrid(x, y)
+Z = funcao(X, Y)
+
+x_inicial = np.array([0, 1])
+a = 2
+B = np.array([-2, -6])
+M = np.array([[1, 0], [0, 1]])
+alpha = 0.6
+err = 1e-8
+n_iteracoes = 10000
+iteracoes = []
+x = x_inicial
+
+for i in range(n_iteracoes):
+    grad = a * x + B
+    x = x - alpha * grad
+    S = np.dot(x, M)
+    Q = np.dot(S, x.T)
+    q = np.dot(B, x.T)
+    z = Q + q + 14
+    if la.norm(grad) < err:
+        print('stop', {})
+        break
+    iteracoes.append(x)
+
+plt.figure(figsize=(5, 8))
+plt.contour(X, Y, Z, levels=np.logspace(0, 3, 20))
+iteracoes = np.array(iteracoes)
+plt.plot(iteracoes[:, 0], iteracoes[:, 1], marker='o', color='red')
+plt.xlabel('x')
+plt.ylabel('y')
+plt.title('Curvas de Nível e Convergência para o Mínimo')
+plt.grid(True)
+
+# Definindo os limites do gráfico para diminuir a escala
+plt.xlim(-2, 3)
+plt.ylim(-2, 5)
+
+plt.show()
