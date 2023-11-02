@@ -1,0 +1,74 @@
+import numpy as np
+from scipy.integrate import odeint
+import matplotlib.pyplot as plt
+import pandas as pd
+from scipy.optimize import curve_fit as cf
+
+R=pd.read_excel('/home/elvis/Teste_MIvan/DIvan.xlsx')
+xia=list(R['Casos Confirmados Acumulados'][:])
+xn=list(R['Nuevos Casos'][:])
+# Definir o sistema de equações diferenciais
+N= 433498 
+x20=1
+def sistema_diferenciais(y, t,m,n):
+    
+    x1, x2 = y  
+    dx_dt=-(-0.36142781581108774)*x1+(-135645.70652712838)*x2+(-5.357733579893093e-22)*(x1**(2*m+1))*(x2**(2*n))
+    dy_dt=-(-9.137660519639471e-07)*x1+(-0.3498837475594358)*x2+(3.73273148646333e-44)*(x1**(2*n))*(x2**(2*m))
+
+    return [dx_dt, dy_dt]
+
+dados_reais_y=xn
+t = np.linspace(0, len(dados_reais_y), len(dados_reais_y))
+# Parâmetros iniciais (a serem otimizados)
+# =============================================================================
+# a1_inicial =0.4
+# a2_inicial = -0.0
+# a3_inicial=-0.0
+# b1_inicial=-0.0
+# b2_inicial=-0.0
+# b3_inicial=0
+# ============================================================================
+
+m_inicial=1
+n_inicial=1
+
+
+
+# Função para ajuste do sistema de equações aos dados
+def ajuste_sistema(t,m,n):
+    #a1, a2,a3,b1,b2,b3 = parametros
+
+    # Condições iniciais
+    y0 = N-x20, x20
+ 
+    # Integração do sistema de equações diferenciais
+    solucao = odeint(sistema_diferenciais, y0, t, args=(m,n))
+
+    # Retornar apenas os valores correspondentes a x (variável de interesse)
+    return solucao[:, 1]
+
+# Ajustar o sistema de equações aos da_dos usando minimize
+
+
+parametros_iniciais = [m_inicial,n_inicial]
+resultado=cf(ajuste_sistema,t,dados_reais_y,parametros_iniciais)
+parametros_otimizados = resultado[0][0],resultado[0][1]
+
+# =============================================================================
+
+print("Parâmetros otimizados:")
+print("m:", resultado[0][0])
+print("n:", resultado[0][1])
+
+# =============================================================================
+
+# Plotar os dados reais e o ajuste do sistema de equações
+plt.plot(t, dados_reais_y, 'bo', label='Dados reais',color='black')
+plt.plot(t, ajuste_sistema(t,resultado[0][0],resultado[0][1]), 'r-', label='Ajuste do sistema de equações')
+plt.xlabel('Tempo')
+plt.ylabel('Variável x')
+plt.legend()
+plt.show()
+
+
