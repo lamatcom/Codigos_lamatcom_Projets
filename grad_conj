@@ -1,0 +1,57 @@
+import numpy as np
+from numpy import linalg as la
+import matplotlib.pyplot as plt
+
+def funcao(x, y):
+    return (x - 1)**2 + (y - 3)**2 + 4
+
+x = np.linspace(-2, 4, 400)
+y = np.linspace(-2, 6, 400)
+X, Y = np.meshgrid(x, y)
+Z = funcao(X, Y)
+
+x_inicial = np.array([1, 0])
+d = -np.array([-10, 8])
+Q = np.array([[12, -6], [-6, 4]]) 
+q = np.array([2, 0])
+err = 1e-8
+n_iteracoes = 644
+c = []
+u = []
+
+A = []
+iteracoes = []
+x = x_inicial
+dk = d
+
+for i in range(n_iteracoes):
+    print('___________________')
+    print('iterações ', str(i+1))
+    # Calcular gradiente e alpha
+    grad = 2 * Q.dot(x) + q
+    alpha = -np.dot(grad, dk) / np.dot(np.dot(Q.dot(dk), dk), 2)
+    # Calcular beta 
+    beta = -np.dot(Q.dot(d), grad) / np.dot(Q.dot(d), d)
+    # Atualizar x e dk
+    x = x + alpha * dk
+    c.append(x[0])
+    u.append(x[1])
+    dk = -grad + beta * dk
+    
+    iteracoes.append(i+1)
+    if la.norm(dk) < err: 
+        print('stop', {})
+        break
+    print('x = ', str(x))
+    A.append(x)
+
+A = np.array(A)  # Converter a lista A em uma matriz numpy
+
+plt.figure(figsize=(8, 6))
+plt.contour(X, Y, Z, levels=np.logspace(0, 3, 20))
+plt.plot(A[:, 0], A[:, 1], marker='o', color='red')
+plt.xlabel('x')
+plt.ylabel('y')
+plt.title('Curvas de Nível e Convergência para o Mínimo')
+plt.grid(True)
+plt.show()
