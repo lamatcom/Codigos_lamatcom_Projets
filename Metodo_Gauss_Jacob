@@ -1,0 +1,47 @@
+import  numpy as np
+from numpy import linalg as la
+#Aqui colocamos o ponto de partida, a matriz associada ao sistema e vetor constante. Ou seje todos os elementos da forma matricial de um sistema linear Ax=b. 
+#Deve-se notar que aqui se trata de um exemplo para um sistema de ordem 3, mas é possível adaptá-lo.
+xi = np.array([1.3,-1.3,-0.8])
+Q=np.array([[3, 1,1],[2, 4,-1],[-1,1,3]]) 
+b=np.array([2,-2,-5])
+#Aqui é definido o erro ou o critério de parada ("Zero computacional").
+err=10**-80
+#Quantidade de repetições desejada
+n_iteração = 240
+iteração=[]
+#Aqui indica-se que queremos que rode considerando inicialmente x igual ao valor dado para a partida, ou seja, o valor inicial.
+x = xi
+#Aqui adicionamos o critério de convergencia de Gauss-Jacob
+s=(abs(Q[0][1])+abs(Q[0][2]))/abs(Q[0][0])
+t=(abs(Q[1][0])+abs(Q[1][2]))/abs(Q[1][1])
+u=(abs(Q[2][0])+abs(Q[2][1]))/abs(Q[2][2])
+alpha_k=np.array([s,t,u])
+
+# Usa-se a condicional para separar entre o caso em que ocorre a convergencia para a soulução e o caso em que não ocorre, isso com base no critério de convergência.
+#Caso o criterio indique a convergencia o computador executa o seguinte bloco de código:
+f max(alpha_k)<1:
+    
+    for i in range(n_iteração):
+        print('___________________')
+        print('iteração ', str(i+1))
+        f=Q.dot(xi)-b
+    
+        x1=(b[0]-Q[0][1]*xi[1]-Q[0][2]*xi[2])/Q[0][0]
+        x2=(b[1]-Q[1][0]*xi[0]-Q[1][2]*xi[2])/Q[1][1]
+        x3=(b[2]-Q[2][0]*xi[0]-Q[2][1]*xi[1])/Q[2][2]
+        #Aqui atualiza-se o ponto de partida
+        x=np.array([x1,x2,x3])
+        xi=x   
+    
+   
+        iteração.append(i+1)
+        #Aqui adicioná-se o critério de parada com base no "zero" computacional
+        if la.norm(f)<err: 
+            print('stop')
+            break
+        print(str(x))  
+#Caso o contrário o bloco a ser excutado será:
+else:
+    print('Não converge')
+    
