@@ -1,0 +1,82 @@
+import numpy as np
+import matplotlib.pyplot as plt
+from scipy.optimize import curve_fit as cf
+from pylab import *
+import pandas as pd
+df=pd.read_csv("/home/elvis/Documents/TCCII/CasosCovidAM1.csv")
+l=df['Casos'][600:720].tolist()
+rc('text', usetex=True)
+T=len(l)
+N=3.9*10**6
+x_plot = np.arange(0,T)
+def model(y,e,j):
+    C0=1
+    Cn0=0
+    R0=0
+    gamma=0.1
+    S0 = N-(C0+Cn0)-R0
+    S=[]
+    C=[]
+    Cn=[]
+    R=[]
+    Ia=[]
+    for i in range(T):
+        dSdt=-e*S0*(C0+Cn0)/N
+        dCdt = j*e*S0*(C0+Cn0)/N-gamma*C0
+        dCndt=(1-j)*e*S0*(C0+Cn0)/N - gamma*Cn0
+        d2Sdt=(-e*dSdt*(C0+Cn0)-e*S0*(dCdt+dCndt))/N
+        d2Cdt= (j*e*dSdt*(C0+Cn0) +j*e*S0*(dCdt+dCndt))/N-gamma*dCdt
+        d2Cndt=((1-j)*e*dSdt*(C0+Cn0) +(1-j)*e*S0*(dCdt+dCndt))/N-gamma*dCndt
+        S1=S0+dSdt+d2Sdt*0.5
+        S.append(S1)
+        C1=C0+dCdt+d2Cdt*0.5
+        C.append(C1)
+        Cn1=Cn0+dCndt+d2Cndt*0.5
+        Cn.append(Cn1)
+        dRdt = gamma * (C0+Cn0)
+        d2Rdt = gamma * (d2Cdt+d2Cndt)
+        R1=R0+dRdt+d2Rdt*0.5
+        R.append(R1)
+        #I=C+Cn
+        #print(I)
+        ia=C1+C0*(gamma-1)
+        Ia.append(ia)
+        S0=S1
+        C0=C1
+        Cn0=Cn1
+        R0=R1
+    return Ia
+ei,ji=0.3,0.0
+param, covariance = cf(model,x_plot,l,p0=[ei,ji],bounds=([0,0],[6,1]))
+bet_aj,j_aj=param
+perr = np.sqrt(np.diag(covariance))     
+res=model(l,bet_aj,j_aj)
+
+residuos = np.array(l) - np.array(res)
+residuos = np.sum(residuos**2)
+print(residuos)
+    
+    
+    
+# =============================================================================
+
+# =============================================================================
+
+plt.tick_params( axis="both", which="both", direction="in", width=2.0, labelsize=13)
+plt.plot(x_plot,l,'bo',color="b")
+plt.plot(x_plot,res, color="r")
+#plt.plot(x_plot,R, color="b")
+plt.xlim(30,len(l)+6)
+# =============================================================================
+plt.rcParams['legend.fontsize'] = 16
+# plt.rcParams.update({'font.size': 16})
+# plt.legend([r'$S(t)$',r'$I(t)$',r'$R(t)$'],loc=5)
+# plt.text(38.5, 227.37552071140974, '$225.2$')
+# plt.text(5, 350, '$R_0=3.0$')
+# =============================================================================
+
+#ylim(0,3000)
+xlabel(r'$t$', fontsize=20)
+ylabel(r'$N_p$', fontsize=20)
+plt.show()
+     
